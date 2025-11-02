@@ -1,0 +1,19 @@
+const int killSwitchPin = 4;  
+const int relayControlPin = 8; // Relay control pin
+
+void setup() {
+  pinMode(killSwitchPin, INPUT_PULLUP); // Use internal pull-up resistor
+  pinMode(relayControlPin, OUTPUT);     // Relay control output
+  
+  digitalWrite(relayControlPin, LOW);   // Relay initially OFF
+}
+
+void loop() {
+  int switchState = digitalRead(killSwitchPin);
+
+  if (switchState == LOW) { // Kill switch pressed (active LOW)
+    digitalWrite(relayControlPin, HIGH); // Turn relay ON
+    delay(2000);                         // Relay ON for 2 seconds
+    digitalWrite(relayControlPin, LOW);  // Turn relay OFF
+  }
+}
