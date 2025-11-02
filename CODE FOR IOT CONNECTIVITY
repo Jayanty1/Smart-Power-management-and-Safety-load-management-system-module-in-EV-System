@@ -1,0 +1,46 @@
+#define ENA 9
+#define IN1 7
+#define IN2 8
+#define RELAY 6
+#define KILL_SWITCH 5
+#define CURRENT_SENSOR A0
+
+float current = 0.0;
+float threshold = 2.5; // Ampere threshold for safety cutoff
+int sensorValue = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(RELAY, OUTPUT);
+  pinMode(KILL_SWITCH, INPUT_PULLUP);
+  digitalWrite(RELAY, HIGH); // Relay ON (Normally ON)
+  Serial.println("System Initialized...");
+}
+
+void loop() {
+  int killState = digitalRead(KILL_SWITCH);
+  sensorValue = analogRead(CURRENT_SENSOR);
+  
+  // Convert ACS712 analog value to current (approximation for 5A module)
+  current = (sensorValue - 512) * (5.0 / 1024.0) / 0.185;
+
+  // Safety condition
+  if (current > threshold || killState == LOW) {
+    digitalWrite(RELAY, LOW);  // Cut off power
+    analogWrite(ENA, 0);       // Stop motor
+    Serial.println("FAULT: Overcurrent or Kill Switch Pressed!");
+  } 
+  else {
+    digitalWrite(RELAY, HIGH); // Normal operation
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENA, 150); // Motor speed (0–255)
+    Serial.print("Current: ");
+    Serial.print(current);
+    Serial.println(" A");
+  }
+
+  delay(500);
